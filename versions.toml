@@ -1,0 +1,29 @@
+# The toolchain versions every diaryx-org repository builds with.
+#
+# One file, because these versions are not independent. `prov` is a Rust
+# workspace whose `fig` and `twig-doc` dependencies have build scripts that shell
+# out to `zig build`, so a Zig bump in `fig` is a Zig bump in `prov` whether or
+# not anyone changes a line there. Eleven copies of "0.16.0" across three flakes
+# and eight workflows is eleven chances for that to be discovered by a broken
+# build instead of by a diff.
+#
+# TOML so that a Rust or Zig tool can read it, `builtins.fromTOML` so the flake
+# beside it can, and `jq`-free enough that a workflow can too:
+#
+#     nix eval --raw github:diaryx-org/nix#versions.zig
+#
+# Bumping one is a commit here, and then a `nix flake update diaryx-nix` in each
+# repository that consumes it. The lock file in each repo is what makes that a
+# decision rather than a surprise.
+
+# fig and twig are Zig, and prov builds them through their build scripts. Pinned
+# exactly rather than by channel because Zig's pre-1.0 releases break the
+# language, not just the standard library.
+zig = "0.16.0"
+
+# leaf sets the floor: gpui, pulled from the Zed monorepo by leaf-gui, uses
+# library features stabilised in 1.95, and Zed pins that exact channel. Nothing
+# else in the org needs anything newer, and every crate's own `rust-version`
+# floor is well below it — so one toolchain serves the whole org, and leaf's
+# rust-toolchain.toml is the reason it is this one.
+rust = "1.95.0"

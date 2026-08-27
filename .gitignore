@@ -1,0 +1,5 @@
+/result
+/result-*
+.direnv/
+.zig-cache/
+.DS_Store
