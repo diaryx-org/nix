@@ -35,6 +35,15 @@ So the versions live in one file, and everything else reads it.
 | `zig` | `0.16.0` | what `fig` and `twig` are written against; pinned exactly, because Zig's pre-1.0 releases break the language and not just the standard library |
 | `rust` | `1.95.0` | `leaf` sets the floor — gpui, pulled from the Zed monorepo by `leaf-gui`, uses library features stabilised in 1.95, and Zed pins that exact channel. Every crate's own `rust-version` is well below it, so one toolchain serves the org |
 
+The two are not the same kind of pin, and it matters. **Zig has to match
+exactly**: `prov` builds `fig` and `twig-doc` through their build scripts, and
+Zig's pre-1.0 releases break the language, so a repository on a different
+version does not compile. **Rust is a dev-shell pin only** — CI deliberately runs
+`dtolnay/rust-toolchain@stable` in thirty-six jobs, because that is how a stable
+release that breaks something gets found the week it lands. Those two numbers
+drifting apart is the arrangement working. Where a floor has to hold, the repo
+checks it directly; `diaryx` has `cargo xtask msrv`.
+
 Bumping one is a commit here and a `nix flake update diaryx-nix` in each
 repository that consumes it. The lock file in each repo is what makes arriving at
 a new toolchain a decision rather than a surprise — this repository moving does
@@ -55,8 +64,8 @@ region and `dx changelog --check` is what both CI and the release call. A repo
 that discovers it is missing discovers it halfway through cutting a release.
 
 For anything else, `lib.${system}.mkShell` takes the same two flags plus
-`packages`, `targets`, and `extensions`, and passes the rest through to
-`pkgs.mkShell`:
+`packages`, `targets`, `extensions`, and `rustVersion`, and passes the rest
+through to `pkgs.mkShell`:
 
 ```nix
 devShells.default = diaryx-nix.lib.${system}.mkShell {
@@ -65,6 +74,14 @@ devShells.default = diaryx-nix.lib.${system}.mkShell {
   packages = [ pkgs.cargo-llvm-cov pkgs.binaryen ];
 };
 ```
+
+`rustVersion` exists for the repository that will eventually need it. `1.95.0` is
+the number that works everywhere — above every crate's MSRV in the org, and equal
+to the channel Zed pins for gpui, which is `leaf`'s constraint. Those two being
+the same number is luck, not design; when it runs out, the odd repository
+overrides it rather than the other fifteen following it down. Note that current
+stable is ahead of it, so a dev shell here is stricter than CI, which is the safe
+direction: what compiles locally compiles there.
 
 `packages` takes derivations rather than names, so they come from the consuming
 repository's own nixpkgs. That is a second nixpkgs in the closure and it is

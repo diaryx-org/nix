@@ -34,8 +34,8 @@
       # profile — cargo, rustc, rust-std, clippy, rustfmt — and the two
       # extensions added here are the ones an editor needs and a build does not,
       # which is why they belong in a dev shell rather than in a derivation.
-      rustFor = system: { targets ? [ ], extensions ? [ ] }:
-        (pkgsFor system).rust-bin.stable.${versions.rust}.default.override {
+      rustFor = system: { version ? versions.rust, targets ? [ ], extensions ? [ ] }:
+        (pkgsFor system).rust-bin.stable.${version}.default.override {
           inherit targets;
           extensions = [ "rust-src" "rust-analyzer" ] ++ extensions;
         };
@@ -50,8 +50,15 @@
       # argument here for every tool one repository wants — the point of this
       # file is the two versions, and a builder that accumulates `withLlvmCov`
       # flags is a build system.
+      # `rustVersion` exists for the one repository that will eventually need it.
+      # `versions.rust` is the number that works everywhere — above every crate's
+      # MSRV in the org, and equal to the channel Zed pins for gpui, which is
+      # `leaf`'s constraint. If those two ever stop being the same number, the
+      # repository with the odd requirement overrides it here rather than the
+      # other fifteen following it down.
       mkShell = system: {
         rust ? false,
+        rustVersion ? versions.rust,
         zig ? false,
         targets ? [ ],
         extensions ? [ ],
@@ -61,9 +68,9 @@
         let
           pkgs = pkgsFor system;
         in
-        pkgs.mkShell ((builtins.removeAttrs args [ "rust" "zig" "targets" "extensions" "packages" ]) // {
+        pkgs.mkShell ((builtins.removeAttrs args [ "rust" "rustVersion" "zig" "targets" "extensions" "packages" ]) // {
           nativeBuildInputs =
-            nixpkgs.lib.optional rust (rustFor system { inherit targets extensions; })
+            nixpkgs.lib.optional rust (rustFor system { version = rustVersion; inherit targets extensions; })
             ++ nixpkgs.lib.optional zig (zigFor system)
             # In every shell, because every repository's changelog is generated
             # and `dx changelog --check` is what CI and the release both call.

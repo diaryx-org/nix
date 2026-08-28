@@ -26,4 +26,12 @@ zig = "0.16.0"
 # else in the org needs anything newer, and every crate's own `rust-version`
 # floor is well below it — so one toolchain serves the whole org, and leaf's
 # rust-toolchain.toml is the reason it is this one.
+#
+# This is the *dev shell* toolchain, and it is deliberately not what CI uses. CI
+# runs `dtolnay/rust-toolchain@stable` in thirty-six jobs, which is how a new
+# stable that breaks something gets found the week it lands rather than the next
+# time somebody bumps a pin. The two numbers drifting apart is the arrangement
+# working, not a thing to go and fix. Where a floor has to hold, the repo checks
+# it directly — diaryx has `cargo xtask msrv`, which builds on the `rust-version`
+# in its own manifest.
 rust = "1.95.0"
