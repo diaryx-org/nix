@@ -24,8 +24,16 @@ zig = "0.16.0"
 # leaf sets the floor: gpui, pulled from the Zed monorepo by leaf-gui, uses
 # library features stabilised in 1.95, and Zed pins that exact channel. Nothing
 # else in the org needs anything newer, and every crate's own `rust-version`
-# floor is well below it — so one toolchain serves the whole org, and leaf's
-# rust-toolchain.toml is the reason it is this one.
+# floor is well below it — so one toolchain serves the whole org.
+#
+# It was 1.95.0 exactly, leaf's channel, until macOS 27 (Darwin 27) shipped a
+# dyld that refuses some proc-macro dylibs 1.95's rustc links — "mis-aligned
+# LINKEDIT string pool" on `librustversion`, which wasm-bindgen's build script
+# loads, so the Worker would not build from the dev shell on a machine running
+# it. rustc reports the refused load as `can't find crate`, which is the
+# message to grep for if it comes back. 1.98 links them so dyld accepts them.
+# leaf's rust-toolchain.toml carries the same number, and its CI checks that
+# file against homebrew.yml; move all three together.
 #
 # This is the *dev shell* toolchain, and it is deliberately not what CI uses. CI
 # runs `dtolnay/rust-toolchain@stable` in thirty-six jobs, which is how a new
@@ -34,4 +42,4 @@ zig = "0.16.0"
 # working, not a thing to go and fix. Where a floor has to hold, the repo checks
 # it directly — diaryx has `cargo xtask msrv`, which builds on the `rust-version`
 # in its own manifest.
-rust = "1.95.0"
+rust = "1.98.1"

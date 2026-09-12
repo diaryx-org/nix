@@ -33,7 +33,7 @@ So the versions live in one file, and everything else reads it.
 | | | why this one |
 |---|---|---|
 | `zig` | `0.16.0` | what `fig` and `twig` are written against; pinned exactly, because Zig's pre-1.0 releases break the language and not just the standard library |
-| `rust` | `1.95.0` | `leaf` sets the floor — gpui, pulled from the Zed monorepo by `leaf-gui`, uses library features stabilised in 1.95, and Zed pins that exact channel. Every crate's own `rust-version` is well below it, so one toolchain serves the org |
+| `rust` | `1.98.1` | `leaf` sets the floor — gpui, pulled from the Zed monorepo by `leaf-gui`, uses library features stabilised in 1.95. Every crate's own `rust-version` is well below it, so one toolchain serves the org. Not 1.95.0 itself, the channel Zed pins, because macOS 27's dyld refuses some proc-macro dylibs that rustc links; `versions.toml` says which |
 
 The two are not the same kind of pin, and it matters. **Zig has to match
 exactly**: `prov` builds `fig` and `twig-doc` through their build scripts, and
@@ -75,11 +75,13 @@ devShells.default = diaryx-nix.lib.${system}.mkShell {
 };
 ```
 
-`rustVersion` exists for the repository that will eventually need it. `1.95.0` is
-the number that works everywhere — above every crate's MSRV in the org, and equal
-to the channel Zed pins for gpui, which is `leaf`'s constraint. Those two being
-the same number is luck, not design; when it runs out, the odd repository
-overrides it rather than the other fifteen following it down. Note that current
+`rustVersion` exists for the repository that will eventually need it. `1.98.1` is
+the number that works everywhere — above every crate's MSRV in the org, and above
+the 1.95 floor gpui sets for `leaf`. It used to equal the channel Zed pins for
+gpui, and the two being the same number was luck, not design; when it ran out
+(macOS 27 would not load what 1.95 linked), the pin moved rather than a
+repository being left behind. When the next mismatch is one repository's alone,
+that repository overrides it rather than the other fifteen following it down. Note that current
 stable is ahead of it, so a dev shell here is stricter than CI, which is the safe
 direction: what compiles locally compiles there.
 
