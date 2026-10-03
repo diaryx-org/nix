@@ -19,7 +19,7 @@
 # fig and twig are Zig, and prov builds them through their build scripts. Pinned
 # exactly rather than by channel because Zig's pre-1.0 releases break the
 # language, not just the standard library.
-zig = "0.16.0"
+zig = "0.17.0"
 
 # leaf sets the floor: gpui, pulled from the Zed monorepo by leaf-gui, uses
 # library features stabilised in 1.95, and Zed pins that exact channel. Nothing
