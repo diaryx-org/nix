@@ -60,8 +60,8 @@ Three that take no arguments:
 | `devShells.${system}.rust-zig` | both — `prov`'s shape, a Cargo workspace whose build scripts run `zig build` |
 
 `git-cliff` is in all three, because every repository's changelog has a generated
-region and `dx changelog --check` is what both CI and the release call. A repo
-that discovers it is missing discovers it halfway through cutting a release.
+region and `release changelog --check` is what both CI and the release call. A
+repo that discovers it is missing discovers it halfway through cutting a release.
 
 For anything else, `lib.${system}.mkShell` takes the same two flags plus
 `packages`, `targets`, `extensions`, and `rustVersion`, and passes the rest

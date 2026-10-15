@@ -73,7 +73,7 @@
             nixpkgs.lib.optional rust (rustFor system { version = rustVersion; inherit targets extensions; })
             ++ nixpkgs.lib.optional zig (zigFor system)
             # In every shell, because every repository's changelog is generated
-            # and `dx changelog --check` is what CI and the release both call.
+            # and `release changelog --check` is what CI and the release both call.
             # It is small, and a repo that discovers it is missing discovers it
             # halfway through cutting a release.
             ++ [ pkgs.git-cliff ]
